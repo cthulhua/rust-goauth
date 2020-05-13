@@ -37,6 +37,34 @@ impl JwtClaims {
             iat,
         }
     }
+    pub fn with_multiple_scopes(
+        service_acc_id: String,
+        scopes: &[Scope],
+        aud_url: String,
+        valid_from: Option<i64>,
+        expires_after: Option<i64>,
+    ) -> Self {
+        let iat = match valid_from {
+            Some(x) => x,
+            None => time::OffsetDateTime::now_utc().timestamp(),
+        };
+        let exp = match expires_after {
+            Some(x) => iat + x,
+            None => iat + 3600,
+        };
+
+        JwtClaims {
+            iss: service_acc_id,
+            scope: scopes
+                .iter()
+                .map(|s| s.url())
+                .collect::<Vec<String>>()
+                .join(" "),
+            aud: aud_url,
+            exp,
+            iat,
+        }
+    }
 }
 
 impl std::fmt::Display for JwtClaims {
